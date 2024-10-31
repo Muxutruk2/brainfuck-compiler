@@ -4,10 +4,10 @@ Python script that compiles brainfuck to C, alongside bash scripts to make life 
 
 ## Requirements
 
-Python 3.12
-gcc
-clang-formatter
-A good OS (not Windows)
+- Python 3.12
+- gcc
+- clang-formatter
+- A good OS (not Windows)
 
 ## Usage
 
