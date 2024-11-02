@@ -88,6 +88,10 @@ def format_c_code(c_code):
 
     return formatted_code
 
+def debug(string: str, verbose: bool):
+    if verbose:
+        click.echo(f"DEBUG: {string}")
+
 
 def save_c_code(code, file:str):
     if not file.endswith(".c"):
@@ -98,22 +102,28 @@ def save_c_code(code, file:str):
 @click.command()
 @click.argument("file")
 @click.option("--output", "-o", required=False, help="Output of C file")
-def main(file: str, output: str):
+@click.option("--verbose", "-v", is_flag=True, help="Debug code")
+def main(file: str, output: str, verbose: bool):
 
     if not output.endswith(".c"):
         output += ".c"
 
     input_code = get_code(file)
 
+    debug(f"RAW CODE\n{input_code}", verbose)
+
     code = clean_code(input_code)
+
+    debug(f"CLEAN CODE\n{code}", verbose)
 
     c_code = brainfuck_to_c(code)
 
     c_code = format_c_code(c_code)
 
-    click.echo(c_code)
+    debug(f"Formatted C Code: {c_code}", verbose)
 
     if output:
+        debug(f"File will be written to {output}", verbose)
         save_c_code(c_code, output)
 
 if __name__ == "__main__":
