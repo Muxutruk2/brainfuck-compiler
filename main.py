@@ -105,6 +105,10 @@ def save_c_code(code, file:str):
 @click.option("--verbose", "-v", is_flag=True, help="Debug code")
 def main(file: str, output: str, verbose: bool):
 
+    if not os.path.isfile(file):
+        click.echo(f"Input file {file} does not exist")
+        exit(1)
+
     if not output.endswith(".c"):
         output += ".c"
 
