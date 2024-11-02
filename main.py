@@ -75,13 +75,18 @@ def format_c_code(c_code):
         temp_file.write(c_code.encode())
         temp_file_path = temp_file.name
 
-    # Use clang-format to format the C code
-    formatted_code = subprocess.check_output([
-        "clang-format",
-        "-style",
-        "{IndentWidth: 4}",
-        temp_file_path,
-    ]).decode()
+    try:
+        # Use clang-format to format the C code
+        formatted_code = subprocess.check_output([
+            "clang-format",
+            "-style",
+            "{IndentWidth: 4}",
+            temp_file_path,
+        ]).decode()
+    except Exception as e:
+        click.echo(f"Error formatting the code: {e}")
+        click.echo("File will not be formatted.")
+        formatted_code = c_code
 
     # Clean up the temporary file
     os.remove(temp_file_path)
