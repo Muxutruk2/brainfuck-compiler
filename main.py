@@ -1,3 +1,4 @@
+from typing import Match
 import click
 import subprocess
 import tempfile
@@ -16,19 +17,40 @@ def clean_code(code: str) -> str:
     """Removes any charachter that is not brainfuck code"""
     return "".join(c for c in code if c in BF_CHARS)
 
+def group_repeated_chars(s):
+    """Returns a list of the commands but same commands are grouped
+        "+++>++<-"
+        "+++", ">", "++", "<", "-"
+    """
+    return [''.join(group) for _, group in groupby(s)]
+
+def command_to_c(s: str):
+    """Given a string of one or more repeated commands, return a line of C code."""
+    command = s[0]
+    number = len(s)
+
+    match command:
+        case '<':
+            return f"ptr -= {number};"  # Move pointer to the left
+        case '>':
+            return f"ptr += {number};"  # Move pointer to the right
+        case '+':
+            return f"*ptr += {number};"  # Increment value at the pointer
+        case '-':
+            return f"*ptr -= {number};"  # Decrement value at the pointer
+        case '.':
+            return "putchar(*ptr);"*number  # Output the value at the pointer
+        case ',':
+            return "*ptr = getchar();"*number  # Input value into the pointer
+        case '[':
+            return "while (*ptr) {"*number  # Begin loop
+        case ']':
+            return "}"*number  # End loop
+        case _:
+            return ""  # Default case for any unsupported command
 
 def brainfuck_to_c(brainfuck_code):
-    # Define command mappings
-    command_map = {
-        '>': "++ptr;",               # Move pointer to the right
-        '<': "--ptr;",               # Move pointer to the left
-        '+': "++*ptr;",              # Increment value at the pointer
-        '-': "--*ptr;",              # Decrement value at the pointer
-        '.': "putchar(*ptr);",       # Output the value at the pointer
-        ',': "*ptr = getchar();",    # Input value into the pointer
-        '[': "while (*ptr) {",       # Begin loop
-        ']': "}"                     # End loop
-    }
+    listed_code = group_repeated_chars(brainfuck_code)
 
     c_code = []
 
@@ -39,9 +61,8 @@ def brainfuck_to_c(brainfuck_code):
     c_code.append("unsigned char *ptr = memory;")
 
     # Parse Brainfuck code
-    for command in brainfuck_code:
-        if command in command_map:
-            c_code.append(command_map[command] + "\n")  # Append the corresponding C code
+    for command in listed_code:
+        c_code.append(command_to_c(command))
 
     # Close the main function
     c_code.append("return 0;")
